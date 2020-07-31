@@ -11,8 +11,9 @@ const count = 10
 const apiUrl = `https://api.nasa.gov/planetary/apod?api_key=${apiKey}&count=${count}`;
 
 let resultsArray = [];
+let favorites = {};
 
-function updateDOM(){
+function createDOMNodes() {
     resultsArray.forEach((result) => {
         //Card Container
         const card = document.createElement('div');
@@ -27,7 +28,7 @@ function updateDOM(){
         image.src = result.url;
         image.alt = 'NASA Picture of the day';
         image.loading = 'lazy';
-        image.classList.add('card-img-top');
+        image.classList.add('card-image-top');
         // Card Body
         const cardBody = document.createElement('div');
         cardBody.classList.add('card-body');
@@ -39,6 +40,7 @@ function updateDOM(){
         const saveText = document.createElement('p');
         saveText.classList.add('clickable');
         saveText.textContent = "Add to Favorites";
+        saveText.setAttribute('onclick',`saveFavorite('${result.url}')`);
         // Card Text
         const cardText = document.createElement('p');
         cardText.textContent = result.explanation;
@@ -58,6 +60,35 @@ function updateDOM(){
         link.appendChild(image);
         card.append(link, cardBody);
         imagesContainer.append(card);
+    });
+
+}
+
+function updateDOM(){
+    //Get Favorites from localStorage
+    if(localStorage.getItem('nasaFavorites')) {
+        favorites = JSON.parse(localStorage.getItem('nasaFavorites'));
+        console.log(favorites);
+    }
+    createDOMNodes();
+
+}
+
+// Add result to favorites
+
+function saveFavorite(itemUrl){
+    // Loop through results array to select Favorite
+    resultsArray.forEach((item) => {
+        if(item.url.includes(itemUrl) && !favorites[itemUrl]) {
+            favorites[itemUrl] = item; 
+            // Show Save Confirmation for 2 Seconds
+            saveConfirmed.hidden = false;
+            setTimeout(()=> {
+                saveConfirmed.hidden = true; 
+            }, 2000);
+        }
+        // Save Favorites in LocalStorage
+        localStorage.setItem('nasaFavorites', JSON.stringify(favorites));
     });
 }
 
